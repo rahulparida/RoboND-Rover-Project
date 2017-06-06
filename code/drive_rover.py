@@ -140,6 +140,7 @@ def telemetry(sid, data):
     else:
         sio.emit('manual', data={}, skip_sid=True)
 
+
 @sio.on('connect')
 def connect(sid, environ):
     print("connect ", sid)
@@ -149,6 +150,7 @@ def connect(sid, environ):
         "get_samples",
         sample_data,
         skip_sid=True)
+
 
 def send_control(commands, image_string1, image_string2):
     # Define commands to be sent to the rover
@@ -165,6 +167,8 @@ def send_control(commands, image_string1, image_string2):
         data,
         skip_sid=True)
     eventlet.sleep(0)
+
+
 # Define a function to send the "pickup" command 
 def send_pickup():
     print("Picking up")
@@ -174,6 +178,9 @@ def send_pickup():
         pickup,
         skip_sid=True)
     eventlet.sleep(0)
+
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Remote Driving')
     parser.add_argument(
