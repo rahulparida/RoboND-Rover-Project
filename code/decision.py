@@ -15,7 +15,15 @@ def decision_step(Rover):
     # rock detected
     Rover.rock_angles = Rover.rock_angles * 180/np.pi
     if Rover.nav_angles is not None:
-        if Rover.mode == 'stop':
+        if Rover.mode == 'stuck':
+            print('------------------------','Stuck mode', '--------------------------')
+            Rover.throttle = 0
+            # Release the brake to allow turning
+            Rover.brake = 0
+            # Turn range is +/- 15 degrees, when stopped the next line will induce 4-wheel turning
+            Rover.steer = -15 #if len(Rover.nav_angles) < Rover.go_forward else np.clip(np.mean(Rover.nav_angles * 180/np.pi), -15, 15)
+            Rover.mode = 'stop'
+        elif Rover.mode == 'stop':
             print('-------------------------','Stop mode','-----------------------------')
             # If we're in stop mode but still moving keep braking
             if Rover.vel > 0.2:
@@ -41,7 +49,7 @@ def decision_step(Rover):
                     Rover.steer = np.clip(np.mean(Rover.nav_angles * 180/np.pi), -15, 15)
                     Rover.mode = 'forward'
         elif is_stuck(Rover):
-            launch_stuck_recovery(Rover)
+            launch_recovery(Rover, 'stuck')
         elif len(Rover.rock_angles) >= 1:
             print('-------------------------', 'Rock Detected','------------------------')
             rock_pix = np.mean(Rover.rock_dists)
@@ -83,7 +91,7 @@ def decision_step(Rover):
                 check_stuck(Rover)
             # If there's a lack of navigable terrain pixels then go to 'stop' mode
             elif len(Rover.nav_angles) < Rover.stop_forward:
-               launch_stuck_recovery(Rover)
+               launch_recovery(Rover, 'stop')
     # Just to make the rover do something 
     # even if no modifications have been made to the code
     else:
@@ -99,12 +107,12 @@ def decision_step(Rover):
     
     return Rover
 
-def launch_stuck_recovery(Rover):
-    print('launching stuck recovery')
+def launch_recovery(Rover, mode):
+    print('launching recovery:', mode)
     Rover.throttle = 0
     Rover.brake = Rover.brake_set
     Rover.steer = 0
-    Rover.mode = 'stop'
+    Rover.mode = mode
 
 def check_stuck(Rover):
     if Rover.vel < 0.01:
